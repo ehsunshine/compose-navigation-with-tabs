@@ -116,21 +116,6 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                 ) { paddingValues ->
-                    /*BackHandler(true) {
-                        Log.d("TAG currentBackStack", "current is: ${currentDestination?.route} and selected tab is ${selectedRootNavDestination.value?.route}")
-                        if (currentDestination == selectedRootNavDestination.value) {
-                            Log.d("TAG currentBackStack", "Nav to Home")
-                            navController.navigate(TabDestinations.Home.route) {
-                                launchSingleTop = true
-                                restoreState = true
-                                navController.graph.setStartDestination(TabDestinations.Home.route)
-                            }
-                        }
-                        else {
-                            Log.d("TAG currentBackStack", "Nav Up")
-                            navController.navigateUp()
-                        }
-                    }*/
                     NavHost(
                         modifier = Modifier.padding(paddingValues),
                         navController = navController,
