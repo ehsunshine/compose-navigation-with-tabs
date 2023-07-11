@@ -90,7 +90,10 @@ class MainActivity : ComponentActivity() {
                                         if (tab == TabDestinations.Home) {
                                             Log.d("TAG currentBackStack", "Pop backstack up to: ${homeTabLastDestination.value?.route}")
                                             navController.popBackStack(
-                                                route = homeTabLastDestinationOrGraphStartDestination(homeTabLastDestination, navController),
+                                                route = homeTabLastDestinationOrGraphStartDestination(
+                                                    homeTabLastDestination.value,
+                                                    navController
+                                                ),
                                                 inclusive = false,
                                                 saveState = true
                                             )
@@ -135,10 +138,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun homeTabLastDestinationOrGraphStartDestination(
-        homeTabLastDestination: MutableState<NavDestination?>,
+        homeTabLastDestination: NavDestination?,
         navController: NavHostController
     ) =
-        homeTabLastDestination.value?.route ?: navController.graph.findStartDestination().route
+        homeTabLastDestination?.route ?: navController.graph.findStartDestination().route
         ?: error("No home tab last destination nor graph start destination")
 }
 
