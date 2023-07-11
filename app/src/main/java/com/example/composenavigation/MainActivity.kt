@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -87,7 +89,11 @@ class MainActivity : ComponentActivity() {
                                         }
                                         if (tab == TabDestinations.Home) {
                                             Log.d("TAG currentBackStack", "Pop backstack up to: ${homeTabLastDestination.value?.route}")
-                                            navController.popBackStack(route = homeTabLastDestination.value?.route ?: navController.graph.findStartDestination().route ?: "", inclusive = false, saveState = true)
+                                            navController.popBackStack(
+                                                route = homeTabLastDestinationOrGraphStartDestination(homeTabLastDestination, navController),
+                                                inclusive = false,
+                                                saveState = true
+                                            )
                                         } else {
                                             navController.navigate(tab.route) {
                                                 popUpTo(
@@ -127,6 +133,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun homeTabLastDestinationOrGraphStartDestination(
+        homeTabLastDestination: MutableState<NavDestination?>,
+        navController: NavHostController
+    ) =
+        homeTabLastDestination.value?.route ?: navController.graph.findStartDestination().route
+        ?: error("No home tab last destination nor graph start destination")
 }
 
 enum class TabDestinations(val route: String, val icon: ImageVector, val title: String) {
