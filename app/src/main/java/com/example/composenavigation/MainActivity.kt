@@ -27,8 +27,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,9 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -49,6 +53,8 @@ import com.example.composenavigation.ui.theme.ComposeNavigationTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -57,6 +63,8 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
+
+                var homeTabLastDestination = remember { mutableStateOf<NavDestination?>(null) }
                 LaunchedEffect(key1 = navBackStackEntry) {
                     Log.d("TAG currentBackStack",
                         navController.currentBackStack.value.mapNotNull { it.destination.route }
@@ -76,12 +84,33 @@ class MainActivity : ComponentActivity() {
                                     selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true,
                                     onClick = {
                                         title = tab.title
-                                        navController.navigate(tab.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
+                                        if (currentDestination?.route?.contains("home") == true) {
+                                            homeTabLastDestination.value = currentDestination
+                                        }
+                                        if (tab == TabDestinations.Home) {
+                                            Log.d("TAG currentBackStack", "Pop backstack up to: ${homeTabLastDestination.value?.route}")
+                                            navController.popBackStack(
+                                                route = homeTabLastDestinationOrGraphStartDestination(
+                                                    homeTabLastDestination.value,
+                                                    navController
+                                                ),
+                                                inclusive = false,
                                                 saveState = true
+                                            )
+                                        } else {
+                                            navController.navigate(tab.route) {
+                                                popUpTo(
+                                                    homeTabLastDestinationOrGraphStartDestination(
+                                                        homeTabLastDestination.value,
+                                                        navController
+                                                    )
+                                                ) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+
+                                                restoreState = true
                                             }
-                                            launchSingleTop = true
-                                            restoreState = true
                                         }
                                     },
                                     icon = {
@@ -109,6 +138,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun homeTabLastDestinationOrGraphStartDestination(
+        homeTabLastDestination: NavDestination?,
+        navController: NavHostController
+    ) =
+        homeTabLastDestination?.route ?: navController.graph.findStartDestination().route
+        ?: error("No home tab last destination nor graph start destination")
 }
 
 enum class TabDestinations(val route: String, val icon: ImageVector, val title: String) {
