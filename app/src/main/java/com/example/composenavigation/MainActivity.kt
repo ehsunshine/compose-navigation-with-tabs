@@ -100,8 +100,10 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             navController.navigate(tab.route) {
                                                 popUpTo(
-                                                    homeTabLastDestination.value?.id
-                                                        ?: navController.graph.findStartDestination().id
+                                                    homeTabLastDestinationOrGraphStartDestination(
+                                                        homeTabLastDestination.value,
+                                                        navController
+                                                    )
                                                 ) {
                                                     saveState = true
                                                 }
